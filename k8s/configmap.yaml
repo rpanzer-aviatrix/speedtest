@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: speedtest-config
+  labels:
+    app: speedtest
+data:
+  # Default test file URLs (can be overridden)
+  SMALL_FILE_URL: "https://ipv4.download.thinkbroadband.com/10MB.zip"
+  MEDIUM_FILE_URL: "https://ipv4.download.thinkbroadband.com/100MB.zip"
+  LARGE_FILE_URL: "https://ipv4.download.thinkbroadband.com/1GB.zip"
+  
+  # Alternative test servers (commented out)
+  # SMALL_FILE_URL: "https://ash-speed.hetzner.com/10MB.bin"
+  # MEDIUM_FILE_URL: "https://ash-speed.hetzner.com/100MB.bin"
+  # LARGE_FILE_URL: "https://ash-speed.hetzner.com/1GB.bin"

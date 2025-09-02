@@ -128,3 +128,14 @@ playwright-report/
 
 # Project specific
 # Add any project-specific files you want to ignore here
+
+# Docker
+*.tar
+docker-compose.override.yml
+
+# Kubernetes secrets (if any)
+*secret*.yaml
+*secrets*.yaml
+
+# Local development files
+.local/
