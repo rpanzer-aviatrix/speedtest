@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Test Application</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #17202b 0%, #1a1e21 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #17202b;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .file-options {
+            margin-bottom: 30px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option:hover {
+            border-color: #69afdc;
+            background-color: rgba(105, 175, 220, 0.1);
+        }
+
+        .option input[type="radio"] {
+            margin-right: 15px;
+            scale: 1.2;
+        }
+
+        .option.selected {
+            border-color: #04d3bc;
+            background-color: rgba(4, 211, 188, 0.1);
+        }
+
+        .option-info {
+            flex-grow: 1;
+        }
+
+        .option-title {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .option-description {
+            color: #6e6359;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .test-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #69afdc 0%, #04d3bc 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .test-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(105, 175, 220, 0.4);
+        }
+
+        .test-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-section {
+            display: block;
+            margin-top: 20px;
+        }
+
+        .progress-section.hidden {
+            opacity: 0.3;
+        }
+
+        .progress-section.active {
+            opacity: 1;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #69afdc 0%, #04d3bc 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .progress-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .info-item {
+            background: rgba(105, 175, 220, 0.08);
+            border: 1px solid rgba(105, 175, 220, 0.15);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            color: #6e6359;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .status-message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .status-hidden {
+            display: none;
+        }
+
+        .final-results {
+            background: linear-gradient(135deg, #17202b 0%, #69afdc 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .final-results h3 {
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .result-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .result-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Speed Test</h1>
+        
+        <div class="file-options">
+            <div class="option" data-size="small">
+                <input type="radio" name="fileSize" value="small" id="small">
+                <div class="option-info">
+                    <div class="option-title">Small File</div>
+                    <div class="option-description">10MB download test</div>
+                </div>
+            </div>            
+            <div class="option" data-size="medium">
+                <input type="radio" name="fileSize" value="medium" id="medium">
+                <div class="option-info">
+                    <div class="option-title">Medium File</div>
+                    <div class="option-description">100MB download test</div>
+                </div>
+            </div>
+            
+            <div class="option" data-size="large">
+                <input type="radio" name="fileSize" value="large" id="large">
+                <div class="option-info">
+                    <div class="option-title">Large File</div>
+                    <div class="option-description">1GB download test</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="test-button" id="runTest">Run Speed Test</button>
+
+        <div class="progress-section" id="progressSection">
+            <div class="status-message" id="statusMessage"></div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="progress-info">
+                <div class="info-item">
+                    <div class="info-label">Progress</div>
+                    <div class="info-value" id="progressPercent">0%</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Speed</div>
+                    <div class="info-value" id="currentSpeed">0 Mbps</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Downloaded</div>
+                    <div class="info-value" id="downloadedAmount">0 MB</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Time</div>
+                    <div class="info-value" id="elapsedTime">0s</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="final-results status-hidden" id="finalResults">
+            <h3>🎉 Speed Test Complete!</h3>
+            <div class="results-grid">
+                <div class="result-item">
+                    <div class="result-label">Average Speed</div>
+                    <div class="result-value" id="finalSpeed">-- Mbps</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Total Time</div>
+                    <div class="result-value" id="finalTime">-- seconds</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">File Size</div>
+                    <div class="result-value" id="finalFileSize">--</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Data Downloaded</div>
+                    <div class="result-value" id="finalDataAmount">-- MB</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let eventSource = null;
+        let sessionId = null;
+
+        // Handle radio button selection
+        document.querySelectorAll('.option').forEach(option => {
+            option.addEventListener('click', () => {
+                const radio = option.querySelector('input[type="radio"]');
+                radio.checked = true;
+                
+                // Update visual selection
+                document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+
+        // Generate unique session ID
+        function generateSessionId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        // Format bytes to human readable format
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const statusElement = document.getElementById('statusMessage');
+            statusElement.textContent = message;
+            statusElement.className = `status-message status-${type}`;
+            statusElement.style.display = 'block';
+        }
+
+        // Show final results
+        function showFinalResults(data) {
+            document.getElementById('finalSpeed').textContent = data.averageSpeed + ' Mbps';
+            document.getElementById('finalTime').textContent = data.totalTime + ' seconds';
+            document.getElementById('finalFileSize').textContent = data.fileSize || '--';
+            document.getElementById('finalDataAmount').textContent = formatBytes(data.totalBytes);
+            document.getElementById('finalResults').classList.remove('status-hidden');
+        }
+
+        // Reset progress and results
+        function resetProgressDisplay() {
+            // Reset progress values
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressPercent').textContent = '0%';
+            document.getElementById('currentSpeed').textContent = '0 Mbps';
+            document.getElementById('downloadedAmount').textContent = '0 MB';
+            document.getElementById('elapsedTime').textContent = '0s';
+            
+            // Hide final results
+            document.getElementById('finalResults').classList.add('status-hidden');
+            
+            // Make progress section active
+            document.getElementById('progressSection').classList.remove('hidden');
+            document.getElementById('progressSection').classList.add('active');
+        }
+
+        // Update progress display
+        function updateProgress(data) {
+            document.getElementById('progressFill').style.width = data.percentage + '%';
+            document.getElementById('progressPercent').textContent = data.percentage + '%';
+            document.getElementById('currentSpeed').textContent = data.speed + ' Mbps';
+            document.getElementById('downloadedAmount').textContent = formatBytes(data.downloadedBytes);
+            document.getElementById('elapsedTime').textContent = data.elapsedTime + 's';
+        }
+
+        // Setup Server-Sent Events
+        function setupSSE(sessionId) {
+            eventSource = new EventSource(`/api/progress/${sessionId}`);
+            console.log('Setting up SSE for sessionId:', sessionId);
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                console.log('Received data:', data);
+                switch(data.type) {
+                    case 'connected':
+                        console.log('Connected to progress stream');
+                        showStatus('Connected to speed test', 'info');
+                        break;
+                        
+                    case 'started':
+                        showStatus(`Starting download of ${data.fileSize} file...`, 'info');
+                        // Progress section is now always visible, just ensure it's active
+                        document.getElementById('progressSection').classList.add('active');
+                        break;
+                        
+                    case 'progress':
+                        updateProgress(data);
+                        break;
+                        
+                    case 'completed':
+                        showStatus(`Test completed! Average speed: ${data.averageSpeed} Mbps in ${data.totalTime}s`, 'success');
+                        showFinalResults(data);
+                        document.getElementById('runTest').disabled = false;
+                        document.getElementById('runTest').textContent = 'Run Speed Test';
+                        break;
+                        
+                    case 'error':
+                        showStatus(`Error: ${data.error}`, 'error');
+                        document.getElementById('runTest').disabled = false;
+                        document.getElementById('runTest').textContent = 'Run Speed Test';
+                        break;
+                }
+            };
+            
+            eventSource.onerror = function(event) {
+                console.error('SSE error:', event);
+                showStatus('Connection error occurred', 'error');
+                document.getElementById('runTest').disabled = false;
+                document.getElementById('runTest').textContent = 'Run Speed Test';
+            };
+        }
+
+        // Run speed test
+        document.getElementById('runTest').addEventListener('click', async () => {
+            const selectedRadio = document.querySelector('input[name="fileSize"]:checked');
+            
+            if (!selectedRadio) {
+                alert('Please select a file size');
+                return;
+            }
+
+            // Generate new session ID and setup SSE
+            sessionId = generateSessionId();
+            setupSSE(sessionId);
+
+            // Update UI
+            document.getElementById('runTest').disabled = true;
+            document.getElementById('runTest').textContent = 'Running Test...';
+            
+            // Reset progress and results
+            resetProgressDisplay();
+
+            try {
+                const response = await fetch('/api/speedtest', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        fileSize: selectedRadio.value,
+                        sessionId: sessionId
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to start speed test');
+                }
+
+            } catch (error) {
+                console.error('Error starting speed test:', error);
+                showStatus('Failed to start speed test', 'error');
+                document.getElementById('runTest').disabled = false;
+                document.getElementById('runTest').textContent = 'Run Speed Test';
+                
+                if (eventSource) {
+                    eventSource.close();
+                }
+            }
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (eventSource) {
+                eventSource.close();
+            }
+        });
+
+        // Initialize UI on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize progress section as inactive
+            document.getElementById('progressSection').classList.add('hidden');
+            // Hide final results initially
+            document.getElementById('finalResults').classList.add('status-hidden');
+            // Hide status message initially
+            document.getElementById('statusMessage').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
