@@ -10,13 +10,13 @@ Pre-built images are automatically available from GitHub Container Registry:
 
 ```bash
 # Pull and run the latest stable image
-docker run -p 3000:3000 ghcr.io/rpanzer/speedtest:latest
+docker run -p 3000:3000 ghcr.io/rpanzer-aviatrix/speedtest:latest
 
 # Pull specific version
-docker run -p 3000:3000 ghcr.io/rpanzer/speedtest:v1.0.0
+docker run -p 3000:3000 ghcr.io/rpanzer-aviatrix/speedtest:v1.0.0
 
 # Pull development version
-docker run -p 3000:3000 ghcr.io/rpanzer/speedtest:develop
+docker run -p 3000:3000 ghcr.io/rpanzer-aviatrix/speedtest:develop
 ```
 
 ### Building Custom Images
@@ -59,7 +59,7 @@ Deploy using images from GitHub Container Registry:
 ```bash
 # Deploy to default namespace
 kubectl apply -f k8s/configmap.yaml
-kubectl apply -f k8s/deployment.yaml  # Uses ghcr.io/rpanzer/speedtest:latest
+kubectl apply -f k8s/deployment.yaml  # Uses ghcr.io/rpanzer-aviatrix/speedtest:latest
 kubectl apply -f k8s/service.yaml
 
 # Deploy to custom namespace
@@ -197,9 +197,9 @@ The application includes automated CI/CD workflows:
 
 | Event | Image Tags Generated |
 |-------|---------------------|
-| Push to `main` | `ghcr.io/rpanzer/speedtest:latest`, `ghcr.io/rpanzer/speedtest:main` |
-| Push to `develop` | `ghcr.io/rpanzer/speedtest:develop` |
-| Git tag `v1.2.3` | `ghcr.io/rpanzer/speedtest:v1.2.3`, `ghcr.io/rpanzer/speedtest:1.2`, `ghcr.io/rpanzer/speedtest:1` |
-| Pull Request | `ghcr.io/rpanzer/speedtest:pr-123` |
+| Push to `main` | `ghcr.io/rpanzer-aviatrix/speedtest:latest`, `ghcr.io/rpanzer-aviatrix/speedtest:main` |
+| Push to `develop` | `ghcr.io/rpanzer-aviatrix/speedtest:develop` |
+| Git tag `v1.2.3` | `ghcr.io/rpanzer-aviatrix/speedtest:v1.2.3`, `ghcr.io/rpanzer-aviatrix/speedtest:1.2`, `ghcr.io/rpanzer-aviatrix/speedtest:1` |
+| Pull Request | `ghcr.io/rpanzer-aviatrix/speedtest:pr-123` |
 
 See [GITHUB_ACTIONS.md](GITHUB_ACTIONS.md) for detailed CI/CD documentation.

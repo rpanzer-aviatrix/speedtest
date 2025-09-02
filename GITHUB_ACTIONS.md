@@ -26,14 +26,21 @@ The project includes three automated workflows that provide comprehensive CI/CD 
 - ✅ **Signed attestations** for supply chain security
 - ✅ **Automatic registry authentication** via GITHUB_TOKEN
 
+### Required Permissions
+The workflow requires the following GitHub token permissions:
+- `contents: read` - Read repository contents
+- `packages: write` - Push images to GitHub Container Registry
+- `id-token: write` - Generate OIDC tokens for attestations
+- `attestations: write` - Write build provenance attestations
+
 ### Image Tags Generated
 | Trigger | Tag Examples |
 |---------|-------------|
-| Push to `main` | `ghcr.io/rpanzer/speedtest:main` |
-| Push to `develop` | `ghcr.io/rpanzer/speedtest:develop` |
-| Tag `v1.2.3` | `ghcr.io/rpanzer/speedtest:v1.2.3`, `ghcr.io/rpanzer/speedtest:1.2`, `ghcr.io/rpanzer/speedtest:1` |
-| PR #42 | `ghcr.io/rpanzer/speedtest:pr-42` |
-| Commit SHA | `ghcr.io/rpanzer/speedtest:sha-abc1234` |
+| Push to `main` | `ghcr.io/rpanzer-aviatrix/speedtest:main` |
+| Push to `develop` | `ghcr.io/rpanzer-aviatrix/speedtest:develop` |
+| Tag `v1.2.3` | `ghcr.io/rpanzer-aviatrix/speedtest:v1.2.3`, `ghcr.io/rpanzer-aviatrix/speedtest:1.2`, `ghcr.io/rpanzer-aviatrix/speedtest:1` |
+| PR #42 | `ghcr.io/rpanzer-aviatrix/speedtest:pr-42` |
+| Commit SHA | `ghcr.io/rpanzer-aviatrix/speedtest:sha-abc1234` |
 
 ## 🔒 Security Scanning Workflow
 
@@ -81,13 +88,13 @@ Results are automatically uploaded to:
 
 ```bash
 # Latest stable version
-docker pull ghcr.io/rpanzer/speedtest:latest
+docker pull ghcr.io/rpanzer-aviatrix/speedtest:latest
 
 # Specific version
-docker pull ghcr.io/rpanzer/speedtest:v1.0.0
+docker pull ghcr.io/rpanzer-aviatrix/speedtest:v1.0.0
 
 # Development version
-docker pull ghcr.io/rpanzer/speedtest:develop
+docker pull ghcr.io/rpanzer-aviatrix/speedtest:develop
 ```
 
 ### Authentication (for private repos)
@@ -105,7 +112,7 @@ The Kubernetes manifests are pre-configured to use GHCR images:
 # k8s/deployment.yaml
 containers:
 - name: speedtest
-  image: ghcr.io/rpanzer/speedtest:latest
+  image: ghcr.io/rpanzer-aviatrix/speedtest:latest
 ```
 
 ## 🔧 Customization

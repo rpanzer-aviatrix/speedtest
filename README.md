@@ -18,14 +18,14 @@ A modern web application that runs network speed tests from the server environme
 
 ```bash
 # Pull and run the latest image from GitHub Container Registry
-docker run -p 3000:3000 ghcr.io/rpanzer/speedtest:latest
+docker run -p 3000:3000 ghcr.io/rpanzer-aviatrix/speedtest:latest
 
 # Or with custom configuration
 docker run -p 3000:3000 \
   -e SMALL_FILE_URL="https://your-server.com/10MB.bin" \
   -e MEDIUM_FILE_URL="https://your-server.com/100MB.bin" \
   -e LARGE_FILE_URL="https://your-server.com/1GB.bin" \
-  ghcr.io/rpanzer/speedtest:latest
+  ghcr.io/rpanzer-aviatrix/speedtest:latest
 ```
 
 ### Option 2: Run from Source
@@ -169,9 +169,9 @@ This project includes automated GitHub Actions workflows:
 
 Pre-built images are available at:
 ```
-ghcr.io/rpanzer/speedtest:latest
-ghcr.io/rpanzer/speedtest:main
-ghcr.io/rpanzer/speedtest:v1.0.0
+ghcr.io/rpanzer-aviatrix/speedtest:latest
+ghcr.io/rpanzer-aviatrix/speedtest:main
+ghcr.io/rpanzer-aviatrix/speedtest:v1.0.0
 ```
 
 Images are automatically built and pushed on:
