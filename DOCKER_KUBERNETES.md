@@ -4,10 +4,25 @@ This guide explains how to build and deploy the Speed Test application using Doc
 
 ## 🐳 Docker
 
-### Building the Image
+### Using Pre-built Images
+
+Pre-built images are automatically available from GitHub Container Registry:
 
 ```bash
-# Build the Docker image
+# Pull and run the latest stable image
+docker run -p 3000:3000 ghcr.io/rpanzer/speedtest:latest
+
+# Pull specific version
+docker run -p 3000:3000 ghcr.io/rpanzer/speedtest:v1.0.0
+
+# Pull development version
+docker run -p 3000:3000 ghcr.io/rpanzer/speedtest:develop
+```
+
+### Building Custom Images
+
+```bash
+# Build the Docker image locally
 docker build -t speedtest-app:latest .
 
 # Run locally for testing
@@ -37,16 +52,27 @@ docker run -p 3000:3000 \
 
 ### Quick Deployment
 
-Use the automated deployment script:
+#### Option 1: Use Pre-built Images (Recommended)
+
+Deploy using images from GitHub Container Registry:
 
 ```bash
 # Deploy to default namespace
-./k8s/deploy.sh
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/deployment.yaml  # Uses ghcr.io/rpanzer/speedtest:latest
+kubectl apply -f k8s/service.yaml
 
 # Deploy to custom namespace
-NAMESPACE=speedtest ./k8s/deploy.sh
+kubectl create namespace speedtest
+kubectl apply -f k8s/ -n speedtest
+```
 
-# Deploy with custom registry
+#### Option 2: Build and Deploy Custom Images
+
+Build your own images and deploy:
+
+```bash
+# Build and deploy with custom registry
 DOCKER_REGISTRY=your-registry.com NAMESPACE=speedtest ./k8s/deploy.sh
 ```
 
@@ -155,3 +181,25 @@ kubectl describe deployment speedtest-app -n speedtest
 - ✅ **Cloud-native**: 12-factor app principles
 - ✅ **Container-ready**: Optimized for orchestration
 - ✅ **Health monitoring**: Built-in health checks
+
+## 🚀 CI/CD Pipeline
+
+### GitHub Actions Integration
+
+The application includes automated CI/CD workflows:
+
+- **🐳 Automated Docker Builds**: Images are automatically built and pushed to `ghcr.io` on every push to main/develop branches
+- **🔒 Security Scanning**: Vulnerability scans with Trivy on every build
+- **🧪 Testing**: Multi-platform testing and validation
+- **📦 Multi-arch Support**: Builds for AMD64 and ARM64 architectures
+
+### Image Tags
+
+| Event | Image Tags Generated |
+|-------|---------------------|
+| Push to `main` | `ghcr.io/rpanzer/speedtest:latest`, `ghcr.io/rpanzer/speedtest:main` |
+| Push to `develop` | `ghcr.io/rpanzer/speedtest:develop` |
+| Git tag `v1.2.3` | `ghcr.io/rpanzer/speedtest:v1.2.3`, `ghcr.io/rpanzer/speedtest:1.2`, `ghcr.io/rpanzer/speedtest:1` |
+| Pull Request | `ghcr.io/rpanzer/speedtest:pr-123` |
+
+See [GITHUB_ACTIONS.md](GITHUB_ACTIONS.md) for detailed CI/CD documentation.

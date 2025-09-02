@@ -10,8 +10,25 @@ A modern web application that runs network speed tests from the server environme
 - **Server-side Testing**: Tests run from the server environment, not the client
 - **Speed Metrics**: Shows download speed, elapsed time, and progress percentage
 - **TLS Certificate Handling**: Ignores expired/invalid TLS certificates for speed test downloads
+- **CI/CD Ready**: Automated Docker builds and security scanning with GitHub Actions
 
 ## Installation
+
+### Option 1: Run with Docker (Recommended)
+
+```bash
+# Pull and run the latest image from GitHub Container Registry
+docker run -p 3000:3000 ghcr.io/rpanzer/speedtest:latest
+
+# Or with custom configuration
+docker run -p 3000:3000 \
+  -e SMALL_FILE_URL="https://your-server.com/10MB.bin" \
+  -e MEDIUM_FILE_URL="https://your-server.com/100MB.bin" \
+  -e LARGE_FILE_URL="https://your-server.com/1GB.bin" \
+  ghcr.io/rpanzer/speedtest:latest
+```
+
+### Option 2: Run from Source
 
 1. Install dependencies:
 ```bash
@@ -123,6 +140,45 @@ npm run dev
 ```
 
 This uses nodemon to automatically restart the server when files change.
+
+## CI/CD
+
+This project includes automated GitHub Actions workflows:
+
+### Workflows
+
+- **🐳 Docker Build & Push** (`docker-build-push.yml`)
+  - Builds Docker images on push to main/develop branches
+  - Pushes to GitHub Container Registry (ghcr.io)
+  - Supports multi-platform builds (amd64, arm64)
+  - Creates signed attestations for supply chain security
+
+- **🔒 Security Scan** (`security-scan.yml`)
+  - Runs Trivy vulnerability scans on Docker images
+  - Uploads results to GitHub Security tab
+  - Scheduled weekly scans
+  - Fails on critical/high vulnerabilities
+
+- **🧪 Test & Lint** (`test.yml`)
+  - Tests application startup and health endpoints
+  - Validates Docker build process
+  - Lints Dockerfile with Hadolint
+  - Runs on multiple Node.js versions
+
+### Container Images
+
+Pre-built images are available at:
+```
+ghcr.io/rpanzer/speedtest:latest
+ghcr.io/rpanzer/speedtest:main
+ghcr.io/rpanzer/speedtest:v1.0.0
+```
+
+Images are automatically built and pushed on:
+- Push to `main` or `develop` branches
+- Git tags starting with `v` (e.g., `v1.0.0`)
+
+For detailed CI/CD documentation, see [GITHUB_ACTIONS.md](GITHUB_ACTIONS.md).
 
 ## License
 

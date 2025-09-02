@@ -139,3 +139,12 @@ docker-compose.override.yml
 
 # Local development files
 .local/
+
+# GitHub Actions artifacts
+.github/workflows/temp/
+workflow-artifacts/
+
+# SARIF security scan results (generated locally)
+*.sarif
+trivy-results.sarif
+hadolint-results.sarif

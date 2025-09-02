@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: speedtest
-        image: speedtest-app:latest
+        image: ghcr.io/rpanzer-aviatrix/speedtest:latest
         ports:
         - containerPort: 3000
           name: http

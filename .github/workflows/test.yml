@@ -1,0 +1,75 @@
+name: Test and Lint
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Check for security vulnerabilities
+      run: npm audit --audit-level=high
+
+    - name: Start application
+      run: |
+        timeout 30s npm start &
+        APP_PID=$!
+        sleep 10
+        
+        # Test if application is responding
+        curl -f http://localhost:3000/api/test-files || exit 1
+        
+        # Test health endpoint
+        curl -f http://localhost:3000/api/test-files | grep -q "small\|medium\|large" || exit 1
+        
+        # Clean up
+        kill $APP_PID 2>/dev/null || true
+
+    - name: Test Docker build
+      run: |
+        docker build -t speedtest-test .
+        docker run --rm -d -p 3001:3000 --name speedtest-container speedtest-test
+        sleep 10
+        curl -f http://localhost:3001/api/test-files || exit 1
+        docker stop speedtest-container
+
+  lint-dockerfile:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Lint Dockerfile
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: Dockerfile
+        format: sarif
+        output-file: hadolint-results.sarif
+        no-fail: true
+        
+    - name: Upload Hadolint scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: hadolint-results.sarif

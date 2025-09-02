@@ -1,0 +1,60 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run weekly security scans
+    - cron: '0 2 * * 1'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  vulnerability-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image for scanning
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        load: true
+        tags: speedtest-app:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@0.33.0
+      with:
+        image-ref: 'speedtest-app:latest'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: Run Trivy vulnerability scanner (table output)
+      uses: aquasecurity/trivy-action@0.33.0
+      with:
+        image-ref: 'speedtest-app:latest'
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'
