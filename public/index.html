@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #17202b 0%, #1a1e21 100%);
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -32,7 +32,7 @@
 
         h1 {
             text-align: center;
-            color: #17202b;
+            color: #1a1a1a;
             margin-bottom: 30px;
             font-size: 2rem;
             font-weight: 700;
@@ -54,8 +54,8 @@
         }
 
         .option:hover {
-            border-color: #69afdc;
-            background-color: rgba(105, 175, 220, 0.1);
+            border-color: #ff6600;
+            background-color: rgba(255, 102, 0, 0.08);
         }
 
         .option input[type="radio"] {
@@ -64,8 +64,8 @@
         }
 
         .option.selected {
-            border-color: #04d3bc;
-            background-color: rgba(4, 211, 188, 0.1);
+            border-color: #7c3aed;
+            background-color: rgba(124, 58, 237, 0.08);
         }
 
         .option-info {
@@ -79,7 +79,7 @@
         }
 
         .option-description {
-            color: #6e6359;
+            color: #666666;
             font-size: 0.9rem;
             margin-top: 5px;
         }
@@ -87,7 +87,7 @@
         .test-button {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #69afdc 0%, #04d3bc 100%);
+            background: linear-gradient(135deg, #ff6600 0%, #ff8800 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -100,7 +100,7 @@
 
         .test-button:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(105, 175, 220, 0.4);
+            box-shadow: 0 10px 20px rgba(255, 102, 0, 0.4);
         }
 
         .test-button:disabled {
@@ -133,7 +133,7 @@
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #69afdc 0%, #04d3bc 100%);
+            background: linear-gradient(90deg, #ff6600 0%, #7c3aed 100%);
             width: 0%;
             transition: width 0.3s ease;
             border-radius: 10px;
@@ -147,8 +147,8 @@
         }
 
         .info-item {
-            background: rgba(105, 175, 220, 0.08);
-            border: 1px solid rgba(105, 175, 220, 0.15);
+            background: rgba(255, 102, 0, 0.05);
+            border: 1px solid rgba(255, 102, 0, 0.12);
             padding: 10px;
             border-radius: 8px;
             text-align: center;
@@ -156,7 +156,7 @@
 
         .info-label {
             font-size: 0.9rem;
-            color: #6e6359;
+            color: #666666;
             margin-bottom: 5px;
         }
 
@@ -175,9 +175,9 @@
         }
 
         .status-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background-color: rgba(255, 102, 0, 0.1);
+            color: #cc5500;
+            border: 1px solid rgba(255, 102, 0, 0.3);
         }
 
         .status-error {
@@ -187,9 +187,9 @@
         }
 
         .status-info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+            background-color: rgba(124, 58, 237, 0.1);
+            color: #6b46c1;
+            border: 1px solid rgba(124, 58, 237, 0.3);
         }
 
         .status-hidden {
@@ -197,7 +197,7 @@
         }
 
         .final-results {
-            background: linear-gradient(135deg, #17202b 0%, #69afdc 100%);
+            background: linear-gradient(135deg, #1a1a1a 0%, #ff6600 50%, #7c3aed 100%);
             color: white;
             padding: 20px;
             border-radius: 15px;
