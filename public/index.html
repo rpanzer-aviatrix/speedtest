@@ -319,7 +319,6 @@
 
     <script>
         let eventSource = null;
-        let sessionId = null;
 
         // Handle radio button selection
         document.querySelectorAll('.option').forEach(option => {
@@ -333,9 +332,28 @@
             });
         });
 
-        // Generate unique session ID
-        function generateSessionId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        // Start speed test with EventSource
+        function startSpeedTest(fileSize) {
+            eventSource = new EventSource(`/api/speedtest?fileSize=${fileSize}`);
+            console.log('Starting speed test for:', fileSize);
+            
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                console.log('Received data:', data);
+                handleProgressData(data);
+            };
+            
+            eventSource.onerror = function(event) {
+                console.error('SSE error:', event);
+                showStatus('Connection error occurred', 'error');
+                document.getElementById('runTest').disabled = false;
+                document.getElementById('runTest').textContent = 'Run Speed Test';
+                eventSource = null;
+            };
+            
+            eventSource.onopen = function(event) {
+                console.log('SSE connection opened');
+            };
         }
 
         // Format bytes to human readable format
@@ -390,54 +408,46 @@
             document.getElementById('elapsedTime').textContent = data.elapsedTime + 's';
         }
 
-        // Setup Server-Sent Events
-        function setupSSE(sessionId) {
-            eventSource = new EventSource(`/api/progress/${sessionId}`);
-            console.log('Setting up SSE for sessionId:', sessionId);
-            eventSource.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-                console.log('Received data:', data);
-                switch(data.type) {
-                    case 'connected':
-                        console.log('Connected to progress stream');
-                        showStatus('Connected to speed test', 'info');
-                        break;
-                        
-                    case 'started':
-                        showStatus(`Starting download of ${data.fileSize} file...`, 'info');
-                        // Progress section is now always visible, just ensure it's active
-                        document.getElementById('progressSection').classList.add('active');
-                        break;
-                        
-                    case 'progress':
-                        updateProgress(data);
-                        break;
-                        
-                    case 'completed':
-                        showStatus(`Test completed! Average speed: ${data.averageSpeed} Mbps in ${data.totalTime}s`, 'success');
-                        showFinalResults(data);
-                        document.getElementById('runTest').disabled = false;
-                        document.getElementById('runTest').textContent = 'Run Speed Test';
-                        break;
-                        
-                    case 'error':
-                        showStatus(`Error: ${data.error}`, 'error');
-                        document.getElementById('runTest').disabled = false;
-                        document.getElementById('runTest').textContent = 'Run Speed Test';
-                        break;
-                }
-            };
-            
-            eventSource.onerror = function(event) {
-                console.error('SSE error:', event);
-                showStatus('Connection error occurred', 'error');
-                document.getElementById('runTest').disabled = false;
-                document.getElementById('runTest').textContent = 'Run Speed Test';
-            };
+        // Handle progress data from SSE stream
+        function handleProgressData(data) {
+            switch(data.type) {
+                case 'started':
+                    showStatus(`Starting download of ${data.fileSize} file...`, 'info');
+                    // Progress section is now always visible, just ensure it's active
+                    document.getElementById('progressSection').classList.add('active');
+                    break;
+                    
+                case 'progress':
+                    updateProgress(data);
+                    break;
+                    
+                case 'completed':
+                    // Update progress bar to 100% completion
+                    updateProgress(data);
+                    showStatus(`Test completed! Average speed: ${data.averageSpeed} Mbps in ${data.totalTime}s`, 'success');
+                    showFinalResults(data);
+                    document.getElementById('runTest').disabled = false;
+                    document.getElementById('runTest').textContent = 'Run Speed Test';
+                    if (eventSource) {
+                        eventSource.close();
+                        eventSource = null;
+                    }
+                    break;
+                    
+                case 'error':
+                    showStatus(`Error: ${data.error}`, 'error');
+                    document.getElementById('runTest').disabled = false;
+                    document.getElementById('runTest').textContent = 'Run Speed Test';
+                    if (eventSource) {
+                        eventSource.close();
+                        eventSource = null;
+                    }
+                    break;
+            }
         }
 
         // Run speed test
-        document.getElementById('runTest').addEventListener('click', async () => {
+        document.getElementById('runTest').addEventListener('click', () => {
             const selectedRadio = document.querySelector('input[name="fileSize"]:checked');
             
             if (!selectedRadio) {
@@ -445,9 +455,11 @@
                 return;
             }
 
-            // Generate new session ID and setup SSE
-            sessionId = generateSessionId();
-            setupSSE(sessionId);
+            // Close any existing connection
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
 
             // Update UI
             document.getElementById('runTest').disabled = true;
@@ -456,32 +468,8 @@
             // Reset progress and results
             resetProgressDisplay();
 
-            try {
-                const response = await fetch('/api/speedtest', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        fileSize: selectedRadio.value,
-                        sessionId: sessionId
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to start speed test');
-                }
-
-            } catch (error) {
-                console.error('Error starting speed test:', error);
-                showStatus('Failed to start speed test', 'error');
-                document.getElementById('runTest').disabled = false;
-                document.getElementById('runTest').textContent = 'Run Speed Test';
-                
-                if (eventSource) {
-                    eventSource.close();
-                }
-            }
+            // Start the speed test
+            startSpeedTest(selectedRadio.value);
         });
 
         // Cleanup on page unload

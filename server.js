@@ -16,8 +16,7 @@ const httpsAgent = new https.Agent({
   timeout: 60000 // 60 seconds
 });
 
-// Store active connections for SSE
-const connections = new Map();
+// No longer need to store connections - each request streams directly
 
 // Middleware
 app.use(express.json());
@@ -42,9 +41,21 @@ const TEST_FILES = {
   }
 };
 
-// SSE endpoint for progress updates
-app.get('/api/progress/:sessionId', (req, res) => {
-  const sessionId = req.params.sessionId;
+// Function to send progress updates via SSE
+function sendProgress(res, data) {
+  console.log('Sending progress update:', data);
+  res.write(`data: ${JSON.stringify(data)}\n\n`);
+}
+
+// Single GET endpoint that runs speed test and streams results
+app.get('/api/speedtest', async (req, res) => {
+  const { fileSize } = req.query;
+  
+  if (!fileSize || !TEST_FILES[fileSize]) {
+    return res.status(400).json({ error: 'Invalid file size. Use: small, medium, or large' });
+  }
+
+  const testFile = TEST_FILES[fileSize];
   
   // Set SSE headers
   res.writeHead(200, {
@@ -55,46 +66,14 @@ app.get('/api/progress/:sessionId', (req, res) => {
     'Access-Control-Allow-Headers': 'Cache-Control'
   });
 
-  // Store connection
-  connections.set(sessionId, res);
-
-  // Send initial connection message
-  res.write(`data: ${JSON.stringify({ type: 'connected', sessionId })}\n\n`);
-
   // Handle client disconnect
   req.on('close', () => {
-    connections.delete(sessionId);
+    console.log('Client disconnected');
   });
-});
-
-// Function to send progress updates via SSE
-function sendProgress(sessionId, data) {
-  const connection = connections.get(sessionId);
-  if (connection) {
-    console.log('Sending progress update:', data);
-    connection.write(`data: ${JSON.stringify(data)}\n\n`);
-  } else {
-    console.log('No connection found for sessionId:', sessionId);
-  }
-}
-
-// Speed test endpoint
-app.post('/api/speedtest', async (req, res) => {
-  const { fileSize, sessionId } = req.body;
-  
-  if (!fileSize || !TEST_FILES[fileSize]) {
-    return res.status(400).json({ error: 'Invalid file size' });
-  }
-
-  if (!sessionId) {
-    return res.status(400).json({ error: 'Session ID required' });
-  }
-
-  const testFile = TEST_FILES[fileSize];
   
   try {
     // Send test started event
-    sendProgress(sessionId, {
+    sendProgress(res, {
       type: 'started',
       fileSize: testFile.size,
       url: testFile.url
@@ -122,7 +101,7 @@ app.post('/api/speedtest', async (req, res) => {
         const speed = downloadedBytes / elapsedTime; // bytes per second
         const speedMbps = (speed * 8) / (1024 * 1024); // Convert to Mbps
 
-        sendProgress(sessionId, {
+        sendProgress(res, {
           type: 'progress',
           percentage,
           downloadedBytes,
@@ -147,24 +126,33 @@ app.post('/api/speedtest', async (req, res) => {
       const totalTime = (endTime - startTime) / 1000;
       const averageSpeed = (totalBytes / totalTime * 8) / (1024 * 1024); // Mbps
 
-      sendProgress(sessionId, {
+      sendProgress(res, {
         type: 'completed',
         totalTime: totalTime.toFixed(1),
         averageSpeed: averageSpeed.toFixed(2),
         totalBytes,
-        fileSize: testFile.size
+        fileSize: testFile.size,
+        // Include progress data to ensure 100% completion
+        percentage: 100,
+        downloadedBytes: totalBytes,
+        speed: averageSpeed.toFixed(2),
+        elapsedTime: totalTime.toFixed(1)
       });
+      
+      // End the SSE stream
+      res.end();
     });
 
     response.data.on('error', (error) => {
       console.log('Stream error:', error);
-      sendProgress(sessionId, {
+      sendProgress(res, {
         type: 'error',
         error: error.message
       });
+      
+      // End the SSE stream on error
+      res.end();
     });
-
-    res.json({ message: 'Speed test started', sessionId });
 
   } catch (error) {
     console.error('Speed test error:', error);
@@ -178,11 +166,13 @@ app.post('/api/speedtest', async (req, res) => {
       errorMessage = 'Server not found. Please check your internet connection.';
     }
     
-    sendProgress(sessionId, {
+    sendProgress(res, {
       type: 'error',
       error: errorMessage
     });
-    res.status(500).json({ error: 'Failed to start speed test' });
+    
+    // End the SSE stream on error
+    res.end();
   }
 });
 
