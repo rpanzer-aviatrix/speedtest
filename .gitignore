@@ -133,9 +133,6 @@ playwright-report/
 *.tar
 docker-compose.override.yml
 
-# Kubernetes secrets (if any)
-*secret*.yaml
-*secrets*.yaml
 
 # Local development files
 .local/
