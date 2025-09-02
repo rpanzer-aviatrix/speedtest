@@ -11,6 +11,7 @@ A modern web application that runs network speed tests from the server environme
 - **Speed Metrics**: Shows download speed, elapsed time, and progress percentage
 - **TLS Certificate Handling**: Ignores expired/invalid TLS certificates for speed test downloads
 - **CI/CD Ready**: Automated Docker builds and security scanning with GitHub Actions
+- **Helm Chart**: Production-ready Kubernetes deployment with configurable values
 
 ## Installation
 
@@ -28,7 +29,34 @@ docker run -p 3000:3000 \
   ghcr.io/rpanzer-aviatrix/speedtest:latest
 ```
 
-### Option 2: Run from Source
+### Option 2: Deploy with Helm (Kubernetes)
+
+```bash
+# Install with Helm (creates namespace and deployment)
+cd helm/speedtest-chart
+helm install speedtest . --create-namespace
+
+# Or with custom test file URLs
+helm install speedtest . \
+  --set env.smallFileUrl="https://your-server.com/10MB.bin" \
+  --set env.mediumFileUrl="https://your-server.com/100MB.bin" \
+  --set env.largeFileUrl="https://your-server.com/1GB.bin" \
+  --create-namespace
+
+# For private registry (requires GitHub Personal Access Token)
+helm install speedtest . \
+  --set imagePullSecrets.registry.username="your-github-username" \
+  --set imagePullSecrets.registry.password="ghp_your_token" \
+  --set imagePullSecrets.registry.email="your-email@example.com" \
+  --create-namespace
+
+# Access via port-forward
+kubectl port-forward -n speedtest deployment/speedtest-app 3000:3000
+```
+
+See [HELM_DEPLOYMENT.md](HELM_DEPLOYMENT.md) for detailed Helm deployment guide.
+
+### Option 3: Run from Source
 
 1. Install dependencies:
 ```bash
@@ -179,6 +207,18 @@ Images are automatically built and pushed on:
 - Git tags starting with `v` (e.g., `v1.0.0`)
 
 For detailed CI/CD documentation, see [GITHUB_ACTIONS.md](GITHUB_ACTIONS.md).
+
+## Helm Chart
+
+The application includes a production-ready Helm chart for Kubernetes deployment:
+
+- **Configurable Environment Variables**: Test file URLs configured as Helm values
+- **Namespace Management**: Automatic namespace creation
+- **Health Checks**: Built-in liveness and readiness probes
+- **Security**: Non-root user execution and security contexts
+- **Resource Management**: Configurable CPU and memory limits
+
+For complete Helm deployment guide, see [HELM_DEPLOYMENT.md](HELM_DEPLOYMENT.md).
 
 ## License
 

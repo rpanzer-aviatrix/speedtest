@@ -148,3 +148,8 @@ workflow-artifacts/
 *.sarif
 trivy-results.sarif
 hadolint-results.sarif
+
+# Helm chart packages
+*.tgz
+helm/*/charts/
+helm/*/Chart.lock

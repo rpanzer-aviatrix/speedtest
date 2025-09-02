@@ -1,0 +1,109 @@
+# Default values for speedtest chart
+
+# Application settings
+app:
+  name: speedtest
+  version: "1.0.0"
+
+# Container image settings
+image:
+  repository: ghcr.io/rpanzer-aviatrix/speedtest
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+# Image pull secrets for private registries
+imagePullSecrets:
+  # Whether to create the image pull secret
+  create: true
+  # Name of the image pull secret
+  name: "speedtest-registry-secret"
+  # Registry configuration for ghcr.io
+  registry:
+    server: "ghcr.io"
+    username: ""  # GitHub username
+    password: ""  # GitHub Personal Access Token or password
+    email: ""     # Email address (optional but recommended)
+  # Use existing secret instead of creating one
+  # If this is set, the secret above will not be created
+  existingSecret: ""
+
+# Namespace configuration
+namespace:
+  name: speedtest
+  create: true
+
+# Deployment configuration
+deployment:
+  name: speedtest-app
+  replicas: 2
+  
+  # Container settings
+  container:
+    name: speedtest
+    port: 3000
+    
+  # Resource limits and requests
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+# Environment variables for test file URLs
+env:
+  # Port configuration
+  port: 3000
+  nodeEnv: "production"
+  
+  # Test file URLs - customize these for different speed test servers
+  smallFileUrl: "https://ipv4.download.thinkbroadband.com/10MB.zip"
+  mediumFileUrl: "https://ipv4.download.thinkbroadband.com/100MB.zip"
+  largeFileUrl: "https://ipv4.download.thinkbroadband.com/1GB.zip"
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+# Pod security context
+podSecurityContext:
+  fsGroup: 1001
+
+# Health checks
+healthCheck:
+  liveness:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+    path: "/api/test-files"
+    
+  readiness:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+    path: "/api/test-files"
+
+# Labels and annotations
+labels:
+  app: speedtest
+  version: v1
+  component: backend
+
+annotations: {}
+
+# Node selector, tolerations, and affinity
+nodeSelector: {}
+tolerations: []
+affinity: {}

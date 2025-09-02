@@ -1,0 +1,17 @@
+apiVersion: v2
+name: speedtest
+description: A Helm chart for Speed Test application
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+home: https://github.com/rpanzer-aviatrix/speedtest
+sources:
+  - https://github.com/rpanzer-aviatrix/speedtest
+maintainers:
+  - name: rpanzer
+    email: rpanzer@aviatrix.com
+keywords:
+  - speedtest
+  - networking
+  - performance
+  - aviatrix

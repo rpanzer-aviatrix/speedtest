@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.name }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "speedtest.labels" . | nindent 4 }}
+  {{- with .Values.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      {{- include "speedtest.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "speedtest.selectorLabels" . | nindent 8 }}
+        {{- with .Values.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- if eq (include "speedtest.useImagePullSecrets" .) "true" }}
+      imagePullSecrets:
+      - name: {{ include "speedtest.imagePullSecretName" . }}
+      {{- end }}
+      containers:
+      - name: {{ .Values.deployment.container.name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.deployment.container.port }}
+          name: http
+          protocol: TCP
+        env:
+        - name: PORT
+          value: {{ .Values.env.port | quote }}
+        - name: NODE_ENV
+          value: {{ .Values.env.nodeEnv | quote }}
+        - name: SMALL_FILE_URL
+          value: {{ .Values.env.smallFileUrl | quote }}
+        - name: MEDIUM_FILE_URL
+          value: {{ .Values.env.mediumFileUrl | quote }}
+        - name: LARGE_FILE_URL
+          value: {{ .Values.env.largeFileUrl | quote }}
+        {{- if .Values.deployment.resources }}
+        resources:
+          {{- toYaml .Values.deployment.resources | nindent 10 }}
+        {{- end }}
+        {{- if .Values.healthCheck.liveness.enabled }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.healthCheck.liveness.path }}
+            port: {{ .Values.deployment.container.port }}
+          initialDelaySeconds: {{ .Values.healthCheck.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.healthCheck.liveness.periodSeconds }}
+          timeoutSeconds: {{ .Values.healthCheck.liveness.timeoutSeconds }}
+          failureThreshold: {{ .Values.healthCheck.liveness.failureThreshold }}
+        {{- end }}
+        {{- if .Values.healthCheck.readiness.enabled }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.healthCheck.readiness.path }}
+            port: {{ .Values.deployment.container.port }}
+          initialDelaySeconds: {{ .Values.healthCheck.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.healthCheck.readiness.periodSeconds }}
+          timeoutSeconds: {{ .Values.healthCheck.readiness.timeoutSeconds }}
+          failureThreshold: {{ .Values.healthCheck.readiness.failureThreshold }}
+        {{- end }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      restartPolicy: Always
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

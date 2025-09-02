@@ -1,0 +1,70 @@
+# Example values file for deploying with private GitHub Container Registry
+# Copy this file and update with your actual credentials
+
+# Namespace configuration
+namespace:
+  name: speedtest-private
+  create: true
+
+# Image configuration (private repository)
+image:
+  repository: ghcr.io/rpanzer-aviatrix/speedtest
+  tag: "latest"
+  pullPolicy: Always
+
+# Image pull secrets for private registry authentication
+imagePullSecrets:
+  create: true
+  name: "speedtest-registry-secret"
+  registry:
+    server: "ghcr.io"
+    username: "your-github-username"          # Replace with your GitHub username
+    password: "ghp_your_personal_access_token" # Replace with your GitHub PAT
+    email: "your-email@example.com"           # Replace with your email
+
+# Environment variables (customize as needed)
+env:
+  port: 3000
+  nodeEnv: "production"
+  smallFileUrl: "https://ipv4.download.thinkbroadband.com/10MB.zip"
+  mediumFileUrl: "https://ipv4.download.thinkbroadband.com/100MB.zip"
+  largeFileUrl: "https://ipv4.download.thinkbroadband.com/1GB.zip"
+
+# Deployment configuration
+deployment:
+  name: speedtest-app
+  replicas: 2
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "200m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+
+# Security settings
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+# Health checks
+healthCheck:
+  liveness:
+    enabled: true
+    initialDelaySeconds: 15
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+    
+  readiness:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 3
