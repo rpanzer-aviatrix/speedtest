@@ -9,18 +9,12 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Create a fresh HTTPS agent for each speed test to avoid connection reuse
-// This ensures accurate speed test measurements by including connection establishment time
-function createFreshHttpsAgent() {
-  return new https.Agent({
-    rejectUnauthorized: false,
-    keepAlive: false,        // Disable connection reuse
-    maxSockets: 1,           // Limit to single connection
-    maxFreeSockets: 0,       // Don't keep free sockets
-    timeout: 60000,          // 60 seconds
-    scheduling: 'fifo'       // First in, first out
-  });
-}
+// HTTPS agent to ignore TLS certificate validation and handle timeouts
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false,
+  keepAlive: true,
+  timeout: 60000 // 60 seconds
+});
 
 // No longer need to store connections - each request streams directly
 
@@ -82,8 +76,7 @@ app.get('/api/speedtest', async (req, res) => {
     sendProgress(res, {
       type: 'started',
       fileSize: testFile.size,
-      url: testFile.url,
-      note: 'Using fresh connection (no connection pooling) for accurate speed measurement'
+      url: testFile.url
     });
 
     const startTime = Date.now();
@@ -91,13 +84,11 @@ app.get('/api/speedtest', async (req, res) => {
     let totalBytes = 0;
 
     // Create axios request with progress tracking
-    // Use a fresh HTTPS agent to avoid connection reuse for accurate speed testing
     const response = await axios({
       method: 'GET',
       url: testFile.url,
       responseType: 'stream',
-      httpsAgent: createFreshHttpsAgent(),
-      timeout: 300000,  // 5 minutes
+      httpsAgent: httpsAgent,
       maxRedirects: 15,
       onDownloadProgress: (progressEvent) => {
         console.log('Download progress:', progressEvent);
