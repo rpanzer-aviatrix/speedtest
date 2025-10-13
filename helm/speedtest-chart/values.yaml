@@ -95,6 +95,62 @@ healthCheck:
     failureThreshold: 3
     path: "/api/test-files"
 
+# Service configuration
+service:
+  # Service type - LoadBalancer for external access, ClusterIP for internal only
+  type: LoadBalancer
+  
+  # External port (what users connect to)
+  port: 80
+  
+  # Target port (container port - should match deployment.container.port)
+  targetPort: 3000
+  
+  # Cloud provider specific configuration
+  # Options: "aws", "azure", "gcp", or "generic" for auto-detection
+  cloudProvider: "generic"
+  
+  # Optional: Static IP address for the load balancer
+  loadBalancerIP: ""
+  
+  # Optional: Restrict load balancer access to specific IP ranges
+  loadBalancerSourceRanges: []
+  # Example:
+  # - "10.0.0.0/8"
+  # - "192.168.0.0/16"
+  
+  # Optional: Node port (only used when type is NodePort)
+  nodePort: ""
+  
+  # General service annotations (applied to all cloud providers)
+  annotations: {}
+  
+  # AWS specific configuration
+  aws:
+    # Load balancer scheme: "internet-facing" or "internal"
+    scheme: "internet-facing"
+    # Additional AWS-specific annotations
+    annotations: {}
+    # Example:
+    # service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    # service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+  
+  # Azure specific configuration  
+  azure:
+    # Additional Azure-specific annotations
+    annotations: {}
+    # Example:
+    # service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+    # service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "subnet-name"
+  
+  # GCP specific configuration
+  gcp:
+    # Additional GCP-specific annotations  
+    annotations: {}
+    # Example:
+    # cloud.google.com/load-balancer-type: "External"
+    # networking.gke.io/load-balancer-type: "External"
+
 # Labels and annotations
 labels:
   app: speedtest
