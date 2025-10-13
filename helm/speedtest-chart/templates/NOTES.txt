@@ -1,4 +1,19 @@
+{{- if eq .Values.service.type "LoadBalancer" }}
+1. Get the external IP or DNS name of your LoadBalancer:
+
+  NOTE: It may take a few minutes for the LoadBalancer IP/DNS to be available.
+        You can watch the status of by running 'kubectl get --namespace {{ .Values.namespace.name }} svc -w {{ include "speedtest.fullname" . }}-service'
+
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Values.namespace.name }} {{ include "speedtest.fullname" . }}-service --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.service.port }}
+
+  Or get the LoadBalancer details directly:
+  kubectl get svc --namespace {{ .Values.namespace.name }} {{ include "speedtest.fullname" . }}-service
+
+2. Alternative - Access via port-forward (for testing):
+{{- else }}
 1. Access the application using port-forward:
+{{- end }}
 
   export POD_NAME=$(kubectl get pods --namespace {{ .Values.namespace.name }} -l "app.kubernetes.io/name={{ include "speedtest.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
   echo "Visit http://127.0.0.1:{{ .Values.deployment.container.port }} to use your application"
@@ -7,14 +22,26 @@
   Alternative one-liner:
   kubectl port-forward -n {{ .Values.namespace.name }} deployment/{{ .Values.deployment.name }} {{ .Values.deployment.container.port }}:{{ .Values.deployment.container.port }}
 
+{{- if eq .Values.service.type "LoadBalancer" }}
+3. Speed Test Application has been deployed!
+{{- else }}
 2. Speed Test Application has been deployed!
+{{- end }}
 
    - Namespace: {{ .Values.namespace.name }}
    - Application: {{ .Values.deployment.name }}
    - Replicas: {{ .Values.deployment.replicas }}
    - Image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+{{- if eq .Values.service.type "LoadBalancer" }}
+   - Service: {{ include "speedtest.fullname" . }}-service ({{ .Values.service.type }})
+   - External Port: {{ .Values.service.port }}
+{{- end }}
 
+{{- if eq .Values.service.type "LoadBalancer" }}
+4. Configuration:
+{{- else }}
 3. Configuration:
+{{- end }}
    - Small File URL: {{ .Values.env.smallFileUrl }}
    - Medium File URL: {{ .Values.env.mediumFileUrl }}
    - Large File URL: {{ .Values.env.largeFileUrl }}
@@ -24,10 +51,18 @@
    - Image Pull Secret: Not configured (using public image)
    {{- end }}
 
+{{- if eq .Values.service.type "LoadBalancer" }}
+5. Check the deployment status:
+{{- else }}
 4. Check the deployment status:
+{{- end }}
    kubectl get pods -n {{ .Values.namespace.name }} -l app={{ .Values.labels.app }}
 
+{{- if eq .Values.service.type "LoadBalancer" }}
+6. View logs:
+{{- else }}
 5. View logs:
+{{- end }}
    kubectl logs -n {{ .Values.namespace.name }} -l app={{ .Values.labels.app }} --follow
 
 Thank you for using Speed Test Application!
